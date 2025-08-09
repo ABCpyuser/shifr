@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шифратор/Дешифратор</title>
+    <style>
+        body {
+            background-color: black;
+            color: green;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .mode-btn {
+            background-color: black;
+            color: green;
+            border: 1px solid green;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn:hover {
+            background-color: #111;
+        }
+
+        .text-area {
+            background-color: black;
+            color: green;
+            border: 1px solid green;
+            width: 80%;
+            height: 200px;
+            font-size: 16px;
+            padding: 10px;
+            margin-bottom: 20px;
+            resize: none;
+        }
+
+        h1 {
+            color: green;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Шифратор/Дешифратор</h1>
+
+    <button id="modeBtn" class="mode-btn">Режим: Шифровка</button>
+
+    <textarea id="inputText" class="text-area" placeholder="Введите текст здесь..."></textarea>
+
+    <textarea id="outputText" class="text-area" placeholder="Результат появится здесь..." readonly></textarea>
+
+    <script>
+        // Словарь для шифрования
+        const switchMap = {
+            "а": "q", "б": "R", "в": "\\/", "г": "*g", "д": "k", "е": "zz", "ё": "'", "ж": "}{", "з": "Q",
+            "и": "f", "й": "F", "к": "~a", "л": "?n", "м": "@", "н": "#", "о": "$$", "п": "_+_", "р": "s",
+            "с": "&", "т": "|-", "у": "Y", "ф": "d", "х": "+", "ц": ">>", "ч": "<<", "ш": "X", "щ": "/X",
+            "ь": "n", "ы": "/n", "ъ": "//n", "э": ":O", "ю": ";;", "я": "m"
+        };
+
+        let mode = "encrypt"; // encrypt или decrypt
+
+        // Элементы DOM
+        const modeBtn = document.getElementById('modeBtn');
+        const inputText = document.getElementById('inputText');
+        const outputText = document.getElementById('outputText');
+
+        // Переключение режима
+        modeBtn.addEventListener('click', toggleMode);
+
+        // Обновление вывода при вводе
+        inputText.addEventListener('input', updateOutput);
+
+        function toggleMode() {
+            if (mode === "encrypt") {
+                mode = "decrypt";
+                modeBtn.textContent = "Режим: Дешифровка";
+            } else {
+                mode = "encrypt";
+                modeBtn.textContent = "Режим: Шифровка";
+            }
+            updateOutput();
+        }
+
+        function updateOutput() {
+            const inputContent = inputText.value.toLowerCase();
+            let translated = [];
+
+            if (mode === "encrypt") {
+                // Режим шифрования
+                for (let char of inputContent) {
+                    translated.push(switchMap[char] || char);
+                }
+            } else {
+                // Режим дешифровки
+                let i = 0;
+                while (i < inputContent.length) {
+                    let found = false;
+                    // Проверяем все возможные значения шифра
+                    for (const [plain, cipher] of Object.entries(switchMap)) {
+                        if (inputContent.startsWith(cipher, i)) {
+                            translated.push(plain);
+                            i += cipher.length;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        translated.push(inputContent[i]);
+                        i += 1;
+                    }
+                }
+            }
+
+            outputText.value = translated.join("");
+        }
+
+        // Обработка сочетаний клавиш
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey) {
+                switch (event.keyCode) {
+                    case 65: // Ctrl+A (Select All)
+                        event.preventDefault();
+                        if (document.activeElement === inputText || document.activeElement === outputText) {
+                            document.activeElement.select();
+                        }
+                        break;
+                    case 67: // Ctrl+C (Copy)
+                        if (document.activeElement === outputText && outputText.selectionStart !== outputText.selectionEnd) {
+                            // Разрешаем копирование из outputText
+                            return;
+                        }
+                        break;
+                    case 86: // Ctrl+V (Paste)
+                        if (document.activeElement === inputText) {
+                            // Разрешаем вставку в inputText
+                            return;
+                        }
+                        break;
+                    case 88: // Ctrl+X (Cut)
+                        if (document.activeElement === inputText && inputText.selectionStart !== inputText.selectionEnd) {
+                            // Разрешаем вырезание из inputText
+                            return;
+                        }
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
