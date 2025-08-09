@@ -60,12 +60,10 @@
 
     <script>
         // Словарь для шифрования
-        const switchMap = {
-            "а": "q", "б": "R", "в": "\\/", "г": "*g", "д": "k", "е": "zz", "ё": "'", "ж": "}{", "з": "Q",
-            "и": "f", "й": "F", "к": "~a", "л": "?n", "м": "@", "н": "#", "о": "$$", "п": "_+_", "р": "s",
-            "с": "&", "т": "|-", "у": "Y", "ф": "d", "х": "+", "ц": ">>", "ч": "<<", "ш": "X", "щ": "/X",
-            "ь": "n", "ы": "/n", "ъ": "//n", "э": ":O", "ю": ";;", "я": "m"
-        };
+        const switchMap = {"а":"q", "б":"R", "в":"\/", "г":"*g", "д":"k", "е":"zz", "ё":"'", "ж":"}{", "з":"Q",
+            "и":"f", "й":"F", "к":"~a", "л":"?n", "м":"@", "н":"#", "о":"$$", "п":"_+_", "р":"s",
+              "с":"&", "т":"|-", "у":"Y", "ф":"d", "х":"+", "ц":">>", "ч":"<<", "ш":"X", "щ":"/X",
+               "ь":"n", "ы":"/n", "ъ":"//n", "э":":O", "ю":";;", "я":"m"};
 
         let mode = "encrypt"; // encrypt или decrypt
 
@@ -92,28 +90,108 @@
         }
 
         function updateOutput() {
-            const inputContent = inputText.value.toLowerCase();
+            const inputContent = inputText.value;
             let translated = [];
 
             if (mode === "encrypt") {
                 // Режим шифрования
-                for (let char of inputContent) {
+                for (let char of inputContent.toLowerCase()) {
                     translated.push(switchMap[char] || char);
                 }
             } else {
-                // Режим дешифровки
+                // Режим дешифровки - теперь проверяем символы в правильном порядке
                 let i = 0;
                 while (i < inputContent.length) {
                     let found = false;
-                    // Проверяем все возможные значения шифра
-                    for (const [plain, cipher] of Object.entries(switchMap)) {
-                        if (inputContent.startsWith(cipher, i)) {
-                            translated.push(plain);
-                            i += cipher.length;
-                            found = true;
-                            break;
+
+                    // Сначала проверяем самые длинные последовательности
+                    if (inputContent.startsWith("//n", i)) {
+                        translated.push("ъ");
+                        i += 3;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("<<", i)) {
+                        translated.push("ч");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith(">>", i)) {
+                        translated.push("ц");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("_+_", i)) {
+                        translated.push("п");
+                        i += 3;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("$$", i)) {
+                        translated.push("о");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("\\/", i)) {
+                        translated.push("в");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("/X", i)) {
+                        translated.push("щ");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("/n", i)) {
+                        translated.push("ы");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("zz", i)) {
+                        translated.push("е");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith(";;", i)) {
+                        translated.push("ю");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith(":O", i)) {
+                        translated.push("э");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("~a", i)) {
+                        translated.push("к");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("?n", i)) {
+                        translated.push("л");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("*g", i)) {
+                        translated.push("г");
+                        i += 2;
+                        found = true;
+                    }
+                    else if (inputContent.startsWith("|-", i)){
+                        translated.push("т");
+                        i += 2;
+                        found = true;
+                    }
+                    // Затем проверяем одиночные символы
+                    else {
+                        for (const [plain, cipher] of Object.entries(switchMap)) {
+                            if (cipher.length === 1 && inputContent[i] === cipher) {
+                                translated.push(plain);
+                                i += 1;
+                                found = true;
+                                break;
+                            }
                         }
                     }
+
                     if (!found) {
                         translated.push(inputContent[i]);
                         i += 1;
