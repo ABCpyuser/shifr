@@ -77,22 +77,22 @@
     </div>
 
     <script>
-        // Словарь для дешифрования (обратный оригинальному)
-        const decryptMap = {
-            "q": "а", "R": "б", "\/": "в", "*g": "г", "k": "д", "zz": "е", "'": "ё", "}{": "ж", 
-            "Q": "з", "f": "и", "F": "й", "~a": "к", "?n": "л", "@": "м", "#": "н", "$$": "о", 
-            "_+_": "п", "s": "р", "&": "с", "|-": "т", "Y": "у", "d": "ф", "+": "х", ">>": "ц", 
-            "<<": "ч", "X": "ш", "/X": "щ", "n": "ь", "/n": "ы", "//n": "ъ", ":O": "э", ";;": "ю", 
-            "m": "я"
-        };
-
-        // Словарь для шифрования
+        // Полный словарь для шифрования
         const encryptMap = {
-            "а":"q", "б":"R", "в":"\/", "г":"*g", "д":"k", "е":"zz", "ё":"'", "ж":"}{", "з":"Q",
+            "а":"q", "б":"R", "в":"\\/", "г":"*g", "д":"k", "е":"zz", "ё":"'", "ж":"}{", "з":"Q",
             "и":"f", "й":"F", "к":"~a", "л":"?n", "м":"@", "н":"#", "о":"$$", "п":"_+_", "р":"s",
             "с":"&", "т":"|-", "у":"Y", "ф":"d", "х":"+", "ц":">>", "ч":"<<", "ш":"X", "щ":"/X",
             "ь":"n", "ы":"/n", "ъ":"//n", "э":":O", "ю":";;", "я":"m"
         };
+
+        // Создаем обратный словарь для дешифровки
+        const decryptMap = {};
+        for (const [key, value] of Object.entries(encryptMap)) {
+            decryptMap[value] = key;
+        }
+
+        // Сортированные последовательности для дешифровки (от самых длинных к коротким)
+        const decryptSequences = Object.keys(decryptMap).sort((a, b) => b.length - a.length);
 
         // Элементы DOM
         const modeIndicator = document.getElementById('modeIndicator');
@@ -105,16 +105,12 @@
         function updateOutput() {
             const inputContent = inputText.value;
             let result = [];
-            let mode;
-
-            // Определяем режим по наличию % в начале текста
+            
             if (inputContent.startsWith('%')) {
-                mode = "decrypt";
                 modeIndicator.textContent = "Режим: Дешифровка";
                 const contentToDecrypt = inputContent.substring(1);
                 result = decryptText(contentToDecrypt);
             } else if (inputContent.trim() !== '') {
-                mode = "encrypt";
                 modeIndicator.textContent = "Режим: Шифровка";
                 const encrypted = encryptText(inputContent);
                 result = ['%', ...encrypted];
@@ -138,14 +134,11 @@
             let decrypted = [];
             let i = 0;
             
-            // Сначала создадим массив всех возможных последовательностей для дешифровки, отсортированный по длине (от большей к меньшей)
-            const sequences = Object.keys(decryptMap).sort((a, b) => b.length - a.length);
-            
             while (i < text.length) {
                 let found = false;
                 
                 // Проверяем все возможные последовательности
-                for (const seq of sequences) {
+                for (const seq of decryptSequences) {
                     if (text.startsWith(seq, i)) {
                         decrypted.push(decryptMap[seq]);
                         i += seq.length;
@@ -208,7 +201,7 @@
         });
 
         // Тестовый пример
-        inputText.value = '%&//nzzXn zz/X\' :O|-f+ @m*g~af+ dsq#>>YQ&~af+ RY?n$$~a, kq //n_+_zzF }{zz <<q;;';
+        inputText.value = '%&//nzzXn zz/X\' :O|-f+ @m*g~af+ dsq#>>YQ&~af+ RY?n$$~a, kq \\//n_+_zzF }{zz <<q;;';
         updateOutput();
     </script>
 </body>
