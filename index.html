@@ -77,11 +77,22 @@
     </div>
 
     <script>
+        // Словарь для дешифрования (обратный оригинальному)
+        const decryptMap = {
+            "q": "а", "R": "б", "\/": "в", "*g": "г", "k": "д", "zz": "е", "'": "ё", "}{": "ж", 
+            "Q": "з", "f": "и", "F": "й", "~a": "к", "?n": "л", "@": "м", "#": "н", "$$": "о", 
+            "_+_": "п", "s": "р", "&": "с", "|-": "т", "Y": "у", "d": "ф", "+": "х", ">>": "ц", 
+            "<<": "ч", "X": "ш", "/X": "щ", "n": "ь", "/n": "ы", "//n": "ъ", ":O": "э", ";;": "ю", 
+            "m": "я"
+        };
+
         // Словарь для шифрования
-        const switchMap = {"а":"q", "б":"R", "в":"\/", "г":"*g", "д":"k", "е":"zz", "ё":"'", "ж":"}{", "з":"Q",
+        const encryptMap = {
+            "а":"q", "б":"R", "в":"\/", "г":"*g", "д":"k", "е":"zz", "ё":"'", "ж":"}{", "з":"Q",
             "и":"f", "й":"F", "к":"~a", "л":"?n", "м":"@", "н":"#", "о":"$$", "п":"_+_", "р":"s",
-              "с":"&", "т":"|-", "у":"Y", "ф":"d", "х":"+", "ц":">>", "ч":"<<", "ш":"X", "щ":"/X",
-               "ь":"n", "ы":"/n", "ъ":"//n", "э":":O", "ю":";;", "я":"m"};
+            "с":"&", "т":"|-", "у":"Y", "ф":"d", "х":"+", "ц":">>", "ч":"<<", "ш":"X", "щ":"/X",
+            "ь":"n", "ы":"/n", "ъ":"//n", "э":":O", "ю":";;", "я":"m"
+        };
 
         // Элементы DOM
         const modeIndicator = document.getElementById('modeIndicator');
@@ -93,129 +104,64 @@
 
         function updateOutput() {
             const inputContent = inputText.value;
-            let translated = [];
+            let result = [];
             let mode;
 
             // Определяем режим по наличию % в начале текста
             if (inputContent.startsWith('%')) {
                 mode = "decrypt";
                 modeIndicator.textContent = "Режим: Дешифровка";
-                // Удаляем символ % для дешифровки
                 const contentToDecrypt = inputContent.substring(1);
-                
-                // Режим дешифровки
-                let i = 0;
-                while (i < contentToDecrypt.length) {
-                    let found = false;
-
-                    // Сначала проверяем самые длинные последовательности
-                    if (contentToDecrypt.startsWith("//n", i)) {
-                        translated.push("ъ");
-                        i += 3;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("<<", i)) {
-                        translated.push("ч");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith(">>", i)) {
-                        translated.push("ц");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("_+_", i)) {
-                        translated.push("п");
-                        i += 3;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("$$", i)) {
-                        translated.push("о");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("\\/", i)) {
-                        translated.push("в");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("/X", i)) {
-                        translated.push("щ");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("/n", i)) {
-                        translated.push("ы");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("zz", i)) {
-                        translated.push("е");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith(";;", i)) {
-                        translated.push("ю");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith(":O", i)) {
-                        translated.push("э");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("~a", i)) {
-                        translated.push("к");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("?n", i)) {
-                        translated.push("л");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("*g", i)) {
-                        translated.push("г");
-                        i += 2;
-                        found = true;
-                    }
-                    else if (contentToDecrypt.startsWith("|-", i)){
-                        translated.push("т");
-                        i += 2;
-                        found = true;
-                    }
-                    // Затем проверяем одиночные символы
-                    else {
-                        for (const [plain, cipher] of Object.entries(switchMap)) {
-                            if (cipher.length === 1 && contentToDecrypt[i] === cipher) {
-                                translated.push(plain);
-                                i += 1;
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (!found) {
-                        translated.push(contentToDecrypt[i]);
-                        i += 1;
-                    }
-                }
-            } else {
+                result = decryptText(contentToDecrypt);
+            } else if (inputContent.trim() !== '') {
                 mode = "encrypt";
                 modeIndicator.textContent = "Режим: Шифровка";
-                
-                // Режим шифрования
-                for (let char of inputContent.toLowerCase()) {
-                    translated.push(switchMap[char] || char);
-                }
-                // Добавляем символ % к зашифрованному тексту
-                if (translated.length > 0) {
-                    translated.unshift('%');
-                }
+                const encrypted = encryptText(inputContent);
+                result = ['%', ...encrypted];
+            } else {
+                modeIndicator.textContent = "Режим: Ожидание ввода";
+                result = [];
             }
 
-            outputText.value = translated.join("");
+            outputText.value = result.join("");
+        }
+
+        function encryptText(text) {
+            let encrypted = [];
+            for (let char of text.toLowerCase()) {
+                encrypted.push(encryptMap[char] || char);
+            }
+            return encrypted;
+        }
+
+        function decryptText(text) {
+            let decrypted = [];
+            let i = 0;
+            
+            // Сначала создадим массив всех возможных последовательностей для дешифровки, отсортированный по длине (от большей к меньшей)
+            const sequences = Object.keys(decryptMap).sort((a, b) => b.length - a.length);
+            
+            while (i < text.length) {
+                let found = false;
+                
+                // Проверяем все возможные последовательности
+                for (const seq of sequences) {
+                    if (text.startsWith(seq, i)) {
+                        decrypted.push(decryptMap[seq]);
+                        i += seq.length;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    // Если последовательность не найдена, добавляем символ как есть
+                    decrypted.push(text[i]);
+                    i++;
+                }
+            }
+            
+            return decrypted;
         }
 
         // Функция копирования в буфер обмена
@@ -244,25 +190,26 @@
                         break;
                     case 67: // Ctrl+C (Copy)
                         if (document.activeElement === outputText && outputText.selectionStart !== outputText.selectionEnd) {
-                            // Разрешаем копирование из outputText
                             return;
                         }
                         break;
                     case 86: // Ctrl+V (Paste)
                         if (document.activeElement === inputText) {
-                            // Разрешаем вставку в inputText
                             return;
                         }
                         break;
                     case 88: // Ctrl+X (Cut)
                         if (document.activeElement === inputText && inputText.selectionStart !== inputText.selectionEnd) {
-                            // Разрешаем вырезание из inputText
                             return;
                         }
                         break;
                 }
             }
         });
+
+        // Тестовый пример
+        inputText.value = '%&//nzzXn zz/X\' :O|-f+ @m*g~af+ dsq#>>YQ&~af+ RY?n$$~a, kq //n_+_zzF }{zz <<q;;';
+        updateOutput();
     </script>
 </body>
 </html>
