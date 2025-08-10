@@ -17,20 +17,6 @@
             align-items: center;
         }
 
-        .mode-btn {
-            background-color: black;
-            color: green;
-            border: 1px solid green;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-
-        .mode-btn:hover {
-            background-color: #111;
-        }
-
         .text-container {
             width: 80%;
             margin-bottom: 20px;
@@ -67,12 +53,18 @@
             color: green;
             margin-bottom: 30px;
         }
+
+        .mode-indicator {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #0f0;
+        }
     </style>
 </head>
 <body>
     <h1>Шифратор/Дешифратор</h1>
 
-    <button id="modeBtn" class="mode-btn">Режим: Шифровка</button>
+    <div class="mode-indicator" id="modeIndicator">Режим: Определяется автоматически</div>
 
     <div class="text-container">
         <textarea id="inputText" class="text-area" placeholder="Введите текст здесь..."></textarea>
@@ -91,117 +83,103 @@
               "с":"&", "т":"|-", "у":"Y", "ф":"d", "х":"+", "ц":">>", "ч":"<<", "ш":"X", "щ":"/X",
                "ь":"n", "ы":"/n", "ъ":"//n", "э":":O", "ю":";;", "я":"m"};
 
-        let mode = "encrypt"; // encrypt или decrypt
-
         // Элементы DOM
-        const modeBtn = document.getElementById('modeBtn');
+        const modeIndicator = document.getElementById('modeIndicator');
         const inputText = document.getElementById('inputText');
         const outputText = document.getElementById('outputText');
-
-        // Переключение режима
-        modeBtn.addEventListener('click', toggleMode);
 
         // Обновление вывода при вводе
         inputText.addEventListener('input', updateOutput);
 
-        function toggleMode() {
-            if (mode === "encrypt") {
-                mode = "decrypt";
-                modeBtn.textContent = "Режим: Дешифровка";
-            } else {
-                mode = "encrypt";
-                modeBtn.textContent = "Режим: Шифровка";
-            }
-            updateOutput();
-        }
-
         function updateOutput() {
             const inputContent = inputText.value;
             let translated = [];
+            let mode;
 
-            if (mode === "encrypt") {
-                // Режим шифрования
-                for (let char of inputContent.toLowerCase()) {
-                    translated.push(switchMap[char] || char);
-                }
-            } else {
-                // Режим дешифровки - теперь проверяем символы в правильном порядке
+            // Определяем режим по наличию % в начале текста
+            if (inputContent.startsWith('%')) {
+                mode = "decrypt";
+                modeIndicator.textContent = "Режим: Дешифровка";
+                // Удаляем символ % для дешифровки
+                const contentToDecrypt = inputContent.substring(1);
+                
+                // Режим дешифровки
                 let i = 0;
-                while (i < inputContent.length) {
+                while (i < contentToDecrypt.length) {
                     let found = false;
 
                     // Сначала проверяем самые длинные последовательности
-                    if (inputContent.startsWith("//n", i)) {
+                    if (contentToDecrypt.startsWith("//n", i)) {
                         translated.push("ъ");
                         i += 3;
                         found = true;
                     }
-                    else if (inputContent.startsWith("<<", i)) {
+                    else if (contentToDecrypt.startsWith("<<", i)) {
                         translated.push("ч");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith(">>", i)) {
+                    else if (contentToDecrypt.startsWith(">>", i)) {
                         translated.push("ц");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith("_+_", i)) {
+                    else if (contentToDecrypt.startsWith("_+_", i)) {
                         translated.push("п");
                         i += 3;
                         found = true;
                     }
-                    else if (inputContent.startsWith("$$", i)) {
+                    else if (contentToDecrypt.startsWith("$$", i)) {
                         translated.push("о");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith("\\/", i)) {
+                    else if (contentToDecrypt.startsWith("\\/", i)) {
                         translated.push("в");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith("/X", i)) {
+                    else if (contentToDecrypt.startsWith("/X", i)) {
                         translated.push("щ");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith("/n", i)) {
+                    else if (contentToDecrypt.startsWith("/n", i)) {
                         translated.push("ы");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith("zz", i)) {
+                    else if (contentToDecrypt.startsWith("zz", i)) {
                         translated.push("е");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith(";;", i)) {
+                    else if (contentToDecrypt.startsWith(";;", i)) {
                         translated.push("ю");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith(":O", i)) {
+                    else if (contentToDecrypt.startsWith(":O", i)) {
                         translated.push("э");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith("~a", i)) {
+                    else if (contentToDecrypt.startsWith("~a", i)) {
                         translated.push("к");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith("?n", i)) {
+                    else if (contentToDecrypt.startsWith("?n", i)) {
                         translated.push("л");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith("*g", i)) {
+                    else if (contentToDecrypt.startsWith("*g", i)) {
                         translated.push("г");
                         i += 2;
                         found = true;
                     }
-                    else if (inputContent.startsWith("|-", i)){
+                    else if (contentToDecrypt.startsWith("|-", i)){
                         translated.push("т");
                         i += 2;
                         found = true;
@@ -209,7 +187,7 @@
                     // Затем проверяем одиночные символы
                     else {
                         for (const [plain, cipher] of Object.entries(switchMap)) {
-                            if (cipher.length === 1 && inputContent[i] === cipher) {
+                            if (cipher.length === 1 && contentToDecrypt[i] === cipher) {
                                 translated.push(plain);
                                 i += 1;
                                 found = true;
@@ -219,9 +197,21 @@
                     }
 
                     if (!found) {
-                        translated.push(inputContent[i]);
+                        translated.push(contentToDecrypt[i]);
                         i += 1;
                     }
+                }
+            } else {
+                mode = "encrypt";
+                modeIndicator.textContent = "Режим: Шифровка";
+                
+                // Режим шифрования
+                for (let char of inputContent.toLowerCase()) {
+                    translated.push(switchMap[char] || char);
+                }
+                // Добавляем символ % к зашифрованному тексту
+                if (translated.length > 0) {
+                    translated.unshift('%');
                 }
             }
 
