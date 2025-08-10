@@ -31,16 +31,36 @@
             background-color: #111;
         }
 
+        .text-container {
+            width: 80%;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
         .text-area {
             background-color: black;
             color: green;
             border: 1px solid green;
-            width: 80%;
+            width: 100%;
             height: 200px;
             font-size: 16px;
             padding: 10px;
-            margin-bottom: 20px;
             resize: none;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background-color: black;
+            color: green;
+            border: 1px solid green;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            background-color: #111;
         }
 
         h1 {
@@ -54,9 +74,15 @@
 
     <button id="modeBtn" class="mode-btn">Режим: Шифровка</button>
 
-    <textarea id="inputText" class="text-area" placeholder="Введите текст здесь..."></textarea>
+    <div class="text-container">
+        <textarea id="inputText" class="text-area" placeholder="Введите текст здесь..."></textarea>
+        <button class="copy-btn" onclick="copyToClipboard('inputText')">Копировать</button>
+    </div>
 
-    <textarea id="outputText" class="text-area" placeholder="Результат появится здесь..." readonly></textarea>
+    <div class="text-container">
+        <textarea id="outputText" class="text-area" placeholder="Результат появится здесь..." readonly></textarea>
+        <button class="copy-btn" onclick="copyToClipboard('outputText')">Копировать</button>
+    </div>
 
     <script>
         // Словарь для шифрования
@@ -200,6 +226,20 @@
             }
 
             outputText.value = translated.join("");
+        }
+
+        // Функция копирования в буфер обмена
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            element.select();
+            document.execCommand('copy');
+            
+            // Показываем уведомление
+            const originalText = event.target.textContent;
+            event.target.textContent = 'Скопировано!';
+            setTimeout(() => {
+                event.target.textContent = originalText;
+            }, 2000);
         }
 
         // Обработка сочетаний клавиш
